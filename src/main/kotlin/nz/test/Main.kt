@@ -35,6 +35,8 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String,
     return KafkaStreams(builder.build(), KafkaUtility.consumerProperties(uniqueClientName, server))
 }
 
+// for gradle :run
+class Main
 
 fun main() {
     val topic = "SimSageTest"       // application name - shared between all
