@@ -5,7 +5,7 @@ import org.apache.kafka.common.serialization.Deserializer
 
 /**
  * enable Kafka to stream java objects
- *
+ * simple string + value from byte-array
  */
 class KafkaPayloadDeserializer : Deserializer<CmdObj> {
 
@@ -16,7 +16,7 @@ class KafkaPayloadDeserializer : Deserializer<CmdObj> {
         if (data == null)
             return obj
         return try {
-            obj.deserialise(data)
+            obj.deSerialise(data)
             obj
         } catch (ex: Exception) {
             obj

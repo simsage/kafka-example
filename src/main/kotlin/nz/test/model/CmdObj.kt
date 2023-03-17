@@ -3,10 +3,15 @@ package nz.test.model
 import java.text.SimpleDateFormat
 import java.util.*
 
+
+/**
+ * an example command object with some fake properties for transmission over binary (ByteArray) data
+ *
+ */
 class CmdObj() {
-    var version = ""
-    var type = ""
-    var time = 0L
+    private var version = ""
+    private var type = ""
+    private var time = 0L
 
     constructor(version: String, type: String) : this() {
         this.version = version
@@ -21,12 +26,14 @@ class CmdObj() {
                     "null"
     }
 
+    // turn this object into bytes
     fun serialise(): ByteArray {
         val str = this.toString()
         return str.toByteArray()
     }
 
-    fun deserialise(data: ByteArray): CmdObj {
+    // bytes back to this object
+    fun deSerialise(data: ByteArray): CmdObj {
         if (data.isNotEmpty()) {
             val str = String(data)
             val parts = str.split("::")
