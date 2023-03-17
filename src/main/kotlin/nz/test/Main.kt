@@ -37,8 +37,8 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String,
 
 
 fun main() {
-    val topic = "SimSageTest"
-    val server = "esb:9092"
+    val topic = "SimSageTest"       // application name - shared between all
+    val server = "esb:9092"         // kafka server CSV
 
     val producer = KafkaUtility.createKafkaProducer(simSageNodeName = "SimSageNode1", server)
 

@@ -13,7 +13,7 @@ object KafkaUtility {
      *
      * @param simSageNodeName   the name for the producer, not related to anything in the received
      *                          but should be unique
-     * @param server    the name of a CSV list of servers, e.g. esb:9092
+     * @param server            the name of a CSV list of servers, e.g. esb:9092 (host1:port1,host2:port2,...)
      */
     fun createKafkaProducer(simSageNodeName: String, server: String): KafkaProducer<String, CmdObj> {
         val props = Properties()
@@ -29,7 +29,7 @@ object KafkaUtility {
      * create the properties for a consumer - commits cannot be auto and are handled by the streaming system itself
      *
      * @param name      a unique name for the client, not used for targeting / routing
-     * @param server    the name of a CSV list of servers, e.g. esb:9092
+     * @param server    the name of a CSV list of servers, e.g. esb:9092 (host1:port1,host2:port2,...)
      */
     fun consumerProperties(name: String, server: String): Properties {
         val props = Properties()
