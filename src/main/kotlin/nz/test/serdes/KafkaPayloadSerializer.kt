@@ -1,25 +1,31 @@
 package nz.test.serdes
-import nz.test.model.CmdObj
-import org.apache.kafka.common.serialization.Serializer
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.kafka.common.serialization.Serializer
 
 /**
  * enable Kafka to stream java objects
- * simple string + value to byte-array
+ *
  */
-class KafkaPayloadSerializer : Serializer<CmdObj> {
+class KafkaPayloadSerializer : Serializer<Any?> {
 
-    override fun configure(map: Map<String, *>?, b: Boolean) {}
+    override fun configure(map: Map<String, *>?, b: Boolean) {
+        // not used here
+    }
 
-    override fun serialize(s: String, o: CmdObj): ByteArray {
+    override fun serialize(s: String, o: Any?): ByteArray {
         return try {
-            o.serialise()
-
+            if (o != null) {
+                return JsonSerDes.objectToBytes(o)
+            } else {
+                ObjectMapper().writeValueAsBytes(JsonSerDes())
+            }
         } catch (ex: Exception) {
-            ByteArray(0)
+            ObjectMapper().writeValueAsBytes(JsonSerDes())
         }
     }
 
-    override fun close() {}
+    override fun close() {
+        // not used here
+    }
 }
-

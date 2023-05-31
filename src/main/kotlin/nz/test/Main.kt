@@ -3,12 +3,19 @@ package nz.test
 import nz.test.model.CmdObj
 import nz.test.serdes.KafkaPayloadDeserializer
 import nz.test.serdes.KafkaPayloadSerializer
-import org.apache.kafka.clients.producer.KafkaProducer
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.kstream.Consumed
+import java.util.*
+
+
+// get a name for the consumer, combined name and nodeId if necessary
+fun getGroupId(topic: String, loadBalancing: Boolean, uniqueClientName: String): String {
+    return if (loadBalancing) "$topic-consumer" else return "$topic-consumer-$uniqueClientName"
+}
 
 
 /**
@@ -16,8 +23,7 @@ import org.apache.kafka.streams.kstream.Consumed
  *
  * @param topic the topic
  */
-fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String,
-                producer: KafkaProducer<String, CmdObj>?, server: String): KafkaStreams {
+fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, t0: Long, server: String): KafkaStreams {
     val builder = StreamsBuilder()
     val graph = builder.stream(
         topic,
@@ -25,14 +31,23 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String,
     )
     graph.filter { k, _ -> k == keyFilter }.foreach { k, v ->
         run {
-            println("$uniqueClientName received: key: $k, value: $v")
-            if (producer != null) {
-                println("$uniqueClientName sending \"$v\" to return")
-                producer.send(ProducerRecord(topic, "return", CmdObj("1", "return value from \"$v\"")))
+            if (v != null && v is CmdObj) {
+                if (v.time == t0) {
+                    println("$uniqueClientName received: key: $k, value: $v")
+                } else {
+                    println("$uniqueClientName received older message - ignoring")
+                }
+            } else {
+                println("$uniqueClientName received null message")
             }
         }
     }
-    return KafkaStreams(builder.build(), KafkaUtility.consumerProperties(uniqueClientName, server))
+
+    val settings = Properties()
+    settings[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 1
+    settings[ConsumerConfig.GROUP_ID_CONFIG] = getGroupId(topic, loadBalancing = true, uniqueClientName)
+
+    return KafkaStreams(builder.build(settings), KafkaUtility.consumerProperties(uniqueClientName, server))
 }
 
 // for gradle :run
@@ -46,28 +61,23 @@ fun main() {
     val producer = KafkaUtility.createKafkaProducer(simSageNodeName = "SimSageNode1", server)
 
     // send two messages to the producer
-    println("sending message 1")
-    val f1 = producer.send(ProducerRecord(topic, "converter-0", CmdObj("1", "convert")))
-    while (!f1.isDone)
-        Thread.sleep(100)
-
-    println("sending message 2")
-    val f2 = producer.send(ProducerRecord(topic, "language-0", CmdObj("1", "parse")))
-    while (!f2.isDone)
-        Thread.sleep(100)
+    println("sending messages")
+    val t0 = System.currentTimeMillis()
+    for (i in 0 until 10) {
+        val f1 = producer.send(ProducerRecord(topic, "converter-0", CmdObj(i.toString(), "convert", t0)))
+        while (!f1.isDone)
+            Thread.sleep(100)
+    }
 
     // and start a set of streams listening for exact keys
     println("sending done, now listening for 120 seconds")
 
     // the client-name must be unique for this to work at all.  The filter will direct to the right processor
-    val s1 = setUpStream(topic, uniqueClientName = "converter-0", keyFilter = "converter-0", producer, server)
+    val s1 = setUpStream(topic, uniqueClientName = "converter-0", keyFilter = "converter-0", t0, server)
     s1.start()
 
-    val s2 = setUpStream(topic, uniqueClientName = "language-0", keyFilter = "language-0", producer, server)
+    val s2 = setUpStream(topic, uniqueClientName = "converter-1", keyFilter = "converter-0", t0, server)
     s2.start()
-
-    val s3 = setUpStream(topic, uniqueClientName = "return-0", keyFilter = "return", producer = null, server)
-    s3.start()
 
     // do something else - just wait in this case
     Thread.sleep(120_000L)
@@ -75,7 +85,6 @@ fun main() {
     // done - close all
     s1.close()
     s2.close()
-    s3.close()
     producer.close()
 }
 

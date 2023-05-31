@@ -10,6 +10,8 @@ repositories {
 
 dependencies {
     implementation group: 'org.apache.kafka', name: 'kafka-streams', version: '3.4.0'
+    api(group: "com.fasterxml.jackson.module", name: "jackson-module-kotlin", version: "2.15.0")
+    api(group: "com.fasterxml.jackson.datatype", name: "jackson-datatype-jsr310", version: "2.15.0")
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
 }
 
