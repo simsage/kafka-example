@@ -8,6 +8,7 @@ import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
 import org.apache.kafka.streams.StreamsBuilder
+import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.Consumed
 import java.util.*
 
@@ -34,20 +35,17 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, t0: 
             if (v != null && v is CmdObj) {
                 if (v.time == t0) {
                     println("$uniqueClientName received: key: $k, value: $v")
-                } else {
-                    println("$uniqueClientName received older message - ignoring")
                 }
-            } else {
-                println("$uniqueClientName received null message")
             }
         }
     }
 
-    val settings = Properties()
-    settings[ConsumerConfig.MAX_POLL_RECORDS_CONFIG] = 1
-    settings[ConsumerConfig.GROUP_ID_CONFIG] = getGroupId(topic, loadBalancing = true, uniqueClientName)
+    val streamSettings = Properties()
+    streamSettings[StreamsConfig.APPLICATION_ID_CONFIG] = uniqueClientName
+    streamSettings[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = server
+    // streamSettings[StreamsConfig.EXACTLY_ONCE_V2] = "false" // doesn't seem to do anything
 
-    return KafkaStreams(builder.build(settings), KafkaUtility.consumerProperties(uniqueClientName, server))
+    return KafkaStreams(builder.build(streamSettings), streamSettings)
 }
 
 // for gradle :run
