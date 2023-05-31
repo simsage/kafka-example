@@ -12,12 +12,6 @@ import org.apache.kafka.streams.kstream.Consumed
 import java.util.*
 
 
-// get a name for the consumer, combined name and nodeId if necessary
-fun getGroupId(topic: String, loadBalancing: Boolean, uniqueClientName: String): String {
-    return if (loadBalancing) "$topic-consumer" else return "$topic-consumer-$uniqueClientName"
-}
-
-
 /**
  * set up a stream on a topic with a "name" and a filter (startsWith string filter) and produce new records optionally
  *
@@ -57,8 +51,8 @@ fun main() {
     // create a producer with ACK = "all"
     val producer = KafkaUtility.createKafkaProducer(simSageNodeName = "SimSageNode1", server)
 
-    // send two messages to the producer
-    println("sending messages")
+    // send 10 messages to the topic
+    println("sending 10 messages")
     val t0 = System.currentTimeMillis()
     for (i in 0 until 10) {
         val f1 = producer.send(ProducerRecord(topic, "converter-0", CmdObj(i.toString(), "convert", t0)))
