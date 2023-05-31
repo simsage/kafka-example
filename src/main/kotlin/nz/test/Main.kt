@@ -3,7 +3,6 @@ package nz.test
 import nz.test.model.CmdObj
 import nz.test.serdes.KafkaPayloadDeserializer
 import nz.test.serdes.KafkaPayloadSerializer
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
