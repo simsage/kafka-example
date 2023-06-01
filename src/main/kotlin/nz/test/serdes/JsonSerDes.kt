@@ -53,7 +53,7 @@ class JsonSerDes {
                     null
                 }
             } catch (ex: Exception) {
-                println("objectFromBytes: ${ex.message?:ex}")
+                // println("objectFromBytes: ${ex.message?:ex}")
                 null
             }
         }

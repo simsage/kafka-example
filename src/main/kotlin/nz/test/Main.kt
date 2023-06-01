@@ -3,6 +3,7 @@ package nz.test
 import nz.test.model.CmdObj
 import nz.test.serdes.KafkaPayloadDeserializer
 import nz.test.serdes.KafkaPayloadSerializer
+import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -13,12 +14,15 @@ import java.util.*
 import kotlin.math.absoluteValue
 
 
+const val t0 = 10000000L
+const val sharedAppName = "SharedAppName"
+
 /**
  * set up a stream on a topic with a "name" and a filter (startsWith string filter) and produce new records optionally
  *
  * @param topic the topic
  */
-fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, t0: Long, server: String): KafkaStreams {
+fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, server: String): KafkaStreams {
     val builder = StreamsBuilder()
     val graph = builder.stream(
         topic,
@@ -35,9 +39,9 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, t0: 
     }
 
     val streamSettings = Properties()
-    streamSettings[StreamsConfig.APPLICATION_ID_CONFIG] = "SameNameApp"
+    streamSettings[StreamsConfig.APPLICATION_ID_CONFIG] = sharedAppName
     streamSettings[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = server
-    // streamSettings[StreamsConfig.EXACTLY_ONCE_V2] = "false" // doesn't seem to do anything
+    streamSettings[StreamsConfig.EXACTLY_ONCE_V2] = "true"
 
     return KafkaStreams(builder.build(streamSettings), streamSettings)
 }
@@ -54,7 +58,6 @@ fun main() {
 
     // send 10 messages to the topic
     println("sending 10 messages")
-    val t0 = System.currentTimeMillis()
     for (i in 0 until 10) {
         val rndInt = Random().nextInt().absoluteValue
         val f1 = producer.send(ProducerRecord(topic, "converter-$rndInt", CmdObj(i.toString(), "convert", t0)))
@@ -65,19 +68,8 @@ fun main() {
     // and start a set of streams listening for exact keys
     println("sending done, now listening for 120 seconds")
 
-    // the client-name must be unique for this to work at all.  The filter will direct to the right processor
-    val s1 = setUpStream(topic, uniqueClientName = "converter-0", keyFilter = "converter-0", t0, server)
-    s1.start()
-
-    val s2 = setUpStream(topic, uniqueClientName = "converter-1", keyFilter = "converter-0", t0, server)
-    s2.start()
-
     // do something else - just wait in this case
     Thread.sleep(120_000L)
-
-    // done - close all
-    s1.close()
-    s2.close()
     producer.close()
 }
 
