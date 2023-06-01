@@ -23,7 +23,7 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, t0: 
         topic,
         Consumed.with(Serdes.String(), Serdes.serdeFrom(KafkaPayloadSerializer(), KafkaPayloadDeserializer()))
     )
-    graph.filter { k, _ -> k == keyFilter }.foreach { k, v ->
+    graph.foreach { k, v ->
         run {
             if (v != null && v is CmdObj) {
                 if (v.time == t0) {
@@ -34,7 +34,7 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, t0: 
     }
 
     val streamSettings = Properties()
-    streamSettings[StreamsConfig.APPLICATION_ID_CONFIG] = uniqueClientName
+    streamSettings[StreamsConfig.APPLICATION_ID_CONFIG] = "SameNameApp"
     streamSettings[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = server
     // streamSettings[StreamsConfig.EXACTLY_ONCE_V2] = "false" // doesn't seem to do anything
 
@@ -55,7 +55,7 @@ fun main() {
     println("sending 10 messages")
     val t0 = System.currentTimeMillis()
     for (i in 0 until 10) {
-        val f1 = producer.send(ProducerRecord(topic, "converter-0", CmdObj(i.toString(), "convert", t0)))
+        val f1 = producer.send(ProducerRecord(topic, "converter-$i", CmdObj(i.toString(), "convert", t0)))
         while (!f1.isDone)
             Thread.sleep(100)
     }
