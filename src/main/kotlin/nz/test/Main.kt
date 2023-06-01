@@ -3,7 +3,6 @@ package nz.test
 import nz.test.model.CmdObj
 import nz.test.serdes.KafkaPayloadDeserializer
 import nz.test.serdes.KafkaPayloadSerializer
-import org.apache.kafka.clients.consumer.ConsumerConfig
 import org.apache.kafka.clients.producer.ProducerRecord
 import org.apache.kafka.common.serialization.Serdes
 import org.apache.kafka.streams.KafkaStreams
@@ -14,8 +13,9 @@ import java.util.*
 import kotlin.math.absoluteValue
 
 
-const val t0 = 10000000L
-const val sharedAppName = "SharedAppName"
+const val t0 = 1000011100L
+const val sharedAppName = "SharedAppName7"
+const val topic = "SimSageTest7"
 
 /**
  * set up a stream on a topic with a "name" and a filter (startsWith string filter) and produce new records optionally
@@ -28,7 +28,7 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, serv
         topic,
         Consumed.with(Serdes.String(), Serdes.serdeFrom(KafkaPayloadSerializer(), KafkaPayloadDeserializer()))
     )
-    graph.filter{ k, _ -> k.startsWith("converter-") }.foreach { k, v ->
+    graph.filter{ k, _ -> k.startsWith(keyFilter) }.foreach { k, v ->
         run {
             if (v != null && v is CmdObj) {
                 if (v.time == t0) {
@@ -50,7 +50,6 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, serv
 class Main
 
 fun main() {
-    val topic = "SimSageTest"       // application name - shared between all
     val server = "esb:9092"         // kafka server CSV
 
     // create a producer with ACK = "all"
