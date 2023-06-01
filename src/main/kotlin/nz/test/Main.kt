@@ -22,7 +22,8 @@ const val topic = "SimSageTest1"
  *
  * @param topic the topic
  */
-fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, server: String): KafkaStreams {
+fun setUpStream(topic: String, isLoadBalanced: Boolean,
+                clientPrintName: String, keyFilter: String, server: String): KafkaStreams {
     val builder = StreamsBuilder()
     val graph = builder.stream(
         topic,
@@ -32,14 +33,15 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, serv
         run {
             if (v != null && v is CmdObj) {
                 if (v.time == t0) {
-                    println("$uniqueClientName received: key: $k, value: $v")
+                    println("$clientPrintName received: key: $k, value: $v")
                 }
             }
         }
     }
 
     val streamSettings = Properties()
-    streamSettings[StreamsConfig.APPLICATION_ID_CONFIG] = sharedAppName
+    val uid = UUID.randomUUID().toString().replace("-", "")
+    streamSettings[StreamsConfig.APPLICATION_ID_CONFIG] = if (isLoadBalanced) sharedAppName else "$sharedAppName-$uid"
     streamSettings[StreamsConfig.BOOTSTRAP_SERVERS_CONFIG] = server
     streamSettings[StreamsConfig.EXACTLY_ONCE_V2] = "true"
 
