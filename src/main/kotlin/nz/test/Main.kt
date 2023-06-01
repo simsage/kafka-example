@@ -10,6 +10,7 @@ import org.apache.kafka.streams.StreamsBuilder
 import org.apache.kafka.streams.StreamsConfig
 import org.apache.kafka.streams.kstream.Consumed
 import java.util.*
+import kotlin.math.absoluteValue
 
 
 /**
@@ -55,7 +56,7 @@ fun main() {
     println("sending 10 messages")
     val t0 = System.currentTimeMillis()
     for (i in 0 until 10) {
-        val rndInt = Random().nextInt()
+        val rndInt = Random().nextInt().absoluteValue
         val f1 = producer.send(ProducerRecord(topic, "converter-$rndInt", CmdObj(i.toString(), "convert", t0)))
         while (!f1.isDone)
             Thread.sleep(100)
