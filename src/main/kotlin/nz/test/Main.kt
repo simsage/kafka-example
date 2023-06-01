@@ -13,9 +13,9 @@ import java.util.*
 import kotlin.math.absoluteValue
 
 
-const val t0 = 1000011100L
-const val sharedAppName = "SharedAppName7"
-const val topic = "SimSageTest7"
+const val t0 = 1000011103L
+const val sharedAppName = "SharedAppName1"
+const val topic = "SimSageTest1"
 
 /**
  * set up a stream on a topic with a "name" and a filter (startsWith string filter) and produce new records optionally
@@ -63,12 +63,6 @@ fun main() {
         while (!f1.isDone)
             Thread.sleep(100)
     }
-
-    // and start a set of streams listening for exact keys
-    println("sending done, now listening for 120 seconds")
-
-    // do something else - just wait in this case
-    Thread.sleep(120_000L)
     producer.close()
 }
 

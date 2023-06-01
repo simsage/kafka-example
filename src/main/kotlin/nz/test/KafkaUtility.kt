@@ -21,7 +21,7 @@ object KafkaUtility {
         props[ProducerConfig.CLIENT_ID_CONFIG] = simSageNodeName
         props[ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG] = "org.apache.kafka.common.serialization.StringSerializer"
         props[ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG] = "nz.test.serdes.KafkaPayloadSerializer"
-        props[ProducerConfig.ACKS_CONFIG] = "1"
+        props[ProducerConfig.ACKS_CONFIG] = "all"
         return KafkaProducer<String, CmdObj>(props)
     }
 

@@ -1,8 +1,5 @@
 package nz.test
 
-import java.util.*
-
-
 fun main() {
     val server = "esb:9092"         // kafka server CSV
 
