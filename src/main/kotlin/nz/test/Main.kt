@@ -55,7 +55,8 @@ fun main() {
     println("sending 10 messages")
     val t0 = System.currentTimeMillis()
     for (i in 0 until 10) {
-        val f1 = producer.send(ProducerRecord(topic, "converter-$i", CmdObj(i.toString(), "convert", t0)))
+        val rndInt = Random().nextInt()
+        val f1 = producer.send(ProducerRecord(topic, "converter-$rndInt", CmdObj(i.toString(), "convert", t0)))
         while (!f1.isDone)
             Thread.sleep(100)
     }
