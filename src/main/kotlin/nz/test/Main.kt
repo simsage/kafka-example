@@ -23,7 +23,7 @@ fun setUpStream(topic: String, uniqueClientName: String, keyFilter: String, t0: 
         topic,
         Consumed.with(Serdes.String(), Serdes.serdeFrom(KafkaPayloadSerializer(), KafkaPayloadDeserializer()))
     )
-    graph.foreach { k, v ->
+    graph.filter{ k, _ -> k.startsWith("converter-") }.foreach { k, v ->
         run {
             if (v != null && v is CmdObj) {
                 if (v.time == t0) {
